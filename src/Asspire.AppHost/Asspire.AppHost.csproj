@@ -20,6 +20,7 @@
     <ProjectReference Include="..\Asspire.ServiceDefaults\Asspire.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Asspire.ProductService\Asspire.ProductService.csproj" />
     <ProjectReference Include="..\Asspire.OrderService\Asspire.OrderService.csproj" />
+    <ProjectReference Include="..\Asspire.Gateway\Asspire.Gateway.csproj" />
   </ItemGroup>
 
 </Project>

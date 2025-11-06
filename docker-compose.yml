@@ -139,6 +139,44 @@ services:
       - asspire-network
     restart: on-failure
 
+  # API Gateway
+  gateway:
+    build:
+      context: .
+      dockerfile: src/Asspire.Gateway/Dockerfile
+    container_name: gateway
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+    ports:
+      - "5000:8080"
+    depends_on:
+      product-service:
+        condition: service_started
+      order-service:
+        condition: service_started
+    networks:
+      - asspire-network
+    restart: on-failure
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:5000
+    ports:
+      - "3000:80"
+    depends_on:
+      gateway:
+        condition: service_started
+    networks:
+      - asspire-network
+    restart: on-failure
+
   # Jaeger for distributed tracing
   jaeger:
     image: jaegertracing/all-in-one:latest

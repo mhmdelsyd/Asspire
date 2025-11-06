@@ -23,11 +23,16 @@ var productService = builder.AddProject<Projects.Asspire_ProductService>("produc
     .WithReference(redis);
 
 // Order Service
-builder.AddProject<Projects.Asspire_OrderService>("orderservice")
+var orderService = builder.AddProject<Projects.Asspire_OrderService>("orderservice")
     .WithReference(readPostgres)
     .WithReference(writePostgres)
     .WithReference(rabbitmq)
     .WithReference(redis)
     .WithReference(productService);
+
+// API Gateway
+builder.AddProject<Projects.Asspire_Gateway>("gateway")
+    .WithReference(productService)
+    .WithReference(orderService);
 
 builder.Build().Run();

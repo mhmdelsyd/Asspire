@@ -5,6 +5,8 @@ A production-ready microservices application built with .NET 8 and Aspire, demon
 ## 🚀 Features
 
 - **🏗️ Microservices Architecture** - Product and Order services with clear separation of concerns
+- **🌐 API Gateway** - YARP reverse proxy with unified API entry point
+- **💻 React Frontend** - Modern, responsive UI for managing products and orders
 - **📊 CQRS Pattern** - Command Query Responsibility Segregation for optimal read/write performance
 - **⚡ Event-Driven** - RabbitMQ for asynchronous communication and eventual consistency
 - **🔄 Read/Write Databases** - Separate PostgreSQL instances for reads and writes
@@ -18,19 +20,36 @@ A production-ready microservices application built with .NET 8 and Aspire, demon
 ## 🏛️ Architecture
 
 ```
-Product Service ───gRPC───► Order Service
-      │                          │
-      ├─► PostgreSQL (Write)     │
-      ├─► PostgreSQL (Read)      │
-      ├─► RabbitMQ ◄─────────────┤
-      ├─► Redis                  │
-      └─► Jaeger (Tracing)       │
+            React Frontend (Port 3000)
+                      │
+                      ▼
+            API Gateway (Port 5000)
+                   /    \
+                  /      \
+                 ▼        ▼
+    Product Service    Order Service
+      (Port 5001)      (Port 5002)
+           │                │
+           └────gRPC────────┘
+           │                │
+           ├─► PostgreSQL (Write)
+           ├─► PostgreSQL (Read)
+           ├─► RabbitMQ ◄──┤
+           ├─► Redis
+           └─► Jaeger (Tracing)
 ```
 
 ### Technology Stack
 
+**Frontend:**
+- **React** - Modern UI library
+- **Axios** - HTTP client
+- **Nginx** - Web server
+
+**Backend:**
 - **.NET 8** - Latest .NET framework
 - **Aspire** - Cloud-native orchestration
+- **YARP** - Reverse proxy and API gateway
 - **PostgreSQL** - Relational database (read/write separation)
 - **RabbitMQ** - Message broker
 - **Redis** - Distributed cache
@@ -48,7 +67,7 @@ Product Service ───gRPC───► Order Service
 
 - Docker Desktop
 - 8GB RAM (16GB recommended)
-- Available ports: 5001, 5002, 5432, 5433, 5672, 6379, 15672, 16686
+- Available ports: 3000, 5000, 5001, 5002, 5432, 5433, 5672, 6379, 15672, 16686
 
 ### Get Started in 3 Commands
 
@@ -60,20 +79,24 @@ cd Asspire
 # 2. Start all services
 docker-compose up -d
 
-# 3. Test the API
-curl http://localhost:5001/api/products?pageNumber=1&pageSize=10
+# 3. Open the application
+# Frontend: http://localhost:3000
+# Gateway API: http://localhost:5000
 ```
 
-**That's it!** 🎉 Your microservices application is now running.
+**That's it!** 🎉 Your complete microservices application with frontend is now running.
 
 ### Access Points
 
 | Service | URL | Description |
 |---------|-----|-------------|
-| Product API | http://localhost:5001 | Product service REST API |
-| Product Swagger | http://localhost:5001/swagger | API documentation |
-| Order API | http://localhost:5002 | Order service REST API |
-| Order Swagger | http://localhost:5002/swagger | API documentation |
+| **Frontend** | **http://localhost:3000** | **React Web Application** |
+| **API Gateway** | **http://localhost:5000** | **Unified API Entry Point** |
+| Gateway Swagger | http://localhost:5000/swagger | Gateway API documentation |
+| Product API | http://localhost:5001 | Product service (direct access) |
+| Product Swagger | http://localhost:5001/swagger | Product API documentation |
+| Order API | http://localhost:5002 | Order service (direct access) |
+| Order Swagger | http://localhost:5002/swagger | Order API documentation |
 | RabbitMQ UI | http://localhost:15672 | Message broker management (guest/guest) |
 | Jaeger UI | http://localhost:16686 | Distributed tracing |
 
