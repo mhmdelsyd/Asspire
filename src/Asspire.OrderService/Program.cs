@@ -5,6 +5,7 @@ using Asspire.OrderService.Grpc;
 using Asspire.OrderService.IntegrationEvents;
 using Asspire.OrderService.Models;
 using MassTransit;
+using MediatR;
 
 var builder = WebApplication.CreateBuilder(args);
 

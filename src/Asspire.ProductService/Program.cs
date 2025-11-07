@@ -3,6 +3,7 @@ using Asspire.ProductService.Features.Products.Commands;
 using Asspire.ProductService.IntegrationEvents;
 using Asspire.ProductService.Services;
 using MassTransit;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
