@@ -84,6 +84,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_HTTP_PORTS: 8080
+      Kestrel__EndpointDefaults__Protocols: Http1AndHttp2
       ConnectionStrings__writedb: Host=postgres-write;Port=5432;Database=writedb;Username=postgres;Password=postgres
       ConnectionStrings__readdb: Host=postgres-read;Port=5432;Database=readdb;Username=postgres;Password=postgres
       ConnectionStrings__redis: redis:6379
