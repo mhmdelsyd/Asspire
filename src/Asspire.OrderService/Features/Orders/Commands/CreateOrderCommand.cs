@@ -1,9 +1,9 @@
 using Asspire.OrderService.Data;
 using Asspire.OrderService.IntegrationEvents;
 using Asspire.OrderService.Models;
-using Asspire.ProductService.Grpc;
 using MassTransit;
 using MediatR;
+using System.Text.Json;
 
 namespace Asspire.OrderService.Features.Orders.Commands;
 
@@ -14,57 +14,81 @@ public record CreateOrderCommand(
     string CustomerEmail
 ) : IRequest<Order?>;
 
+// DTOs for Product Service HTTP responses
+public record ProductDto(int Id, string Name, string Description, decimal Price, int StockQuantity, string Category);
+
 public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Order?>
 {
     private readonly OrderWriteDbContext _writeContext;
-    private readonly ProductGrpc.ProductGrpcClient _productClient;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly ILogger<CreateOrderCommandHandler> _logger;
+    private readonly IConfiguration _configuration;
 
     public CreateOrderCommandHandler(
         OrderWriteDbContext writeContext,
-        ProductGrpc.ProductGrpcClient productClient,
+        IHttpClientFactory httpClientFactory,
         IPublishEndpoint publishEndpoint,
-        ILogger<CreateOrderCommandHandler> logger)
+        ILogger<CreateOrderCommandHandler> logger,
+        IConfiguration configuration)
     {
         _writeContext = writeContext;
-        _productClient = productClient;
+        _httpClientFactory = httpClientFactory;
         _publishEndpoint = publishEndpoint;
         _logger = logger;
+        _configuration = configuration;
     }
 
     public async Task<Order?> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            // Check product availability via gRPC
-            var availabilityResponse = await _productClient.CheckProductAvailabilityAsync(
-                new CheckAvailabilityRequest
-                {
-                    ProductId = request.ProductId,
-                    Quantity = request.Quantity
-                }, cancellationToken: cancellationToken);
+            // Get product details via HTTP
+            var httpClient = _httpClientFactory.CreateClient();
+            var productServiceUrl = _configuration["SERVICES__PRODUCTSERVICE__HTTP__0"] ?? "http://product-service:8080";
 
-            if (!availabilityResponse.IsAvailable)
+            _logger.LogInformation("Fetching product {ProductId} from {Url}", request.ProductId, productServiceUrl);
+
+            var productResponse = await httpClient.GetAsync(
+                $"{productServiceUrl}/api/products/{request.ProductId}",
+                cancellationToken);
+
+            if (!productResponse.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Product {ProductId} not available. Requested: {Requested}, Available: {Available}",
-                    request.ProductId, request.Quantity, availabilityResponse.AvailableQuantity);
+                _logger.LogWarning("Product {ProductId} not found. Status: {StatusCode}",
+                    request.ProductId, productResponse.StatusCode);
                 return null;
             }
 
-            // Get product details via gRPC
-            var productResponse = await _productClient.GetProductAsync(
-                new GetProductRequest { Id = request.ProductId },
-                cancellationToken: cancellationToken);
+            var productJson = await productResponse.Content.ReadAsStringAsync(cancellationToken);
+            var product = JsonSerializer.Deserialize<ProductDto>(productJson, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
 
+            if (product == null)
+            {
+                _logger.LogWarning("Product {ProductId} could not be deserialized", request.ProductId);
+                return null;
+            }
+
+            // Check availability
+            if (product.StockQuantity < request.Quantity)
+            {
+                _logger.LogWarning("Product {ProductId} insufficient stock. Requested: {Requested}, Available: {Available}",
+                    request.ProductId, request.Quantity, product.StockQuantity);
+                return null;
+            }
+
+            // Create order with product details
             var order = new Order
             {
                 Id = Guid.NewGuid(),
                 ProductId = request.ProductId,
-                ProductName = productResponse.Name,
+                ProductName = product.Name,
                 Quantity = request.Quantity,
-                UnitPrice = (decimal)productResponse.Price,
-                TotalPrice = (decimal)productResponse.Price * request.Quantity,
+                UnitPrice = product.Price,
+                TotalPrice = product.Price * request.Quantity,
                 Status = OrderStatus.Pending,
                 CustomerName = request.CustomerName,
                 CustomerEmail = request.CustomerEmail,

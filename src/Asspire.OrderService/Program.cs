@@ -3,7 +3,6 @@ using Asspire.OrderService.Features.Orders.Commands;
 using Asspire.OrderService.Features.Orders.Queries;
 using Asspire.OrderService.IntegrationEvents;
 using Asspire.OrderService.Models;
-using Asspire.ProductService.Grpc;
 using MassTransit;
 using MediatR;
 
@@ -24,13 +23,8 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("redis");
 });
 
-// Add gRPC client for Product Service
-builder.Services.AddGrpcClient<ProductGrpc.ProductGrpcClient>(options =>
-{
-    var productServiceUrl = builder.Configuration["SERVICES__PRODUCTSERVICE__HTTP__0"]
-        ?? "http://product-service:8080";
-    options.Address = new Uri(productServiceUrl);
-});
+// Add HttpClient for Product Service REST API calls
+builder.Services.AddHttpClient();
 
 // Add MediatR for CQRS
 builder.Services.AddMediatR(cfg =>
