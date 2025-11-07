@@ -1,9 +1,9 @@
 using Asspire.OrderService.Data;
 using Asspire.OrderService.Features.Orders.Commands;
 using Asspire.OrderService.Features.Orders.Queries;
-using Asspire.OrderService.Grpc;
 using Asspire.OrderService.IntegrationEvents;
 using Asspire.OrderService.Models;
+using Asspire.ProductService.Grpc;
 using MassTransit;
 using MediatR;
 
