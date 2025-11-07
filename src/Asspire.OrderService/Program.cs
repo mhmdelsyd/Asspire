@@ -27,9 +27,10 @@ builder.Services.AddStackExchangeRedisCache(options =>
 // Add gRPC client for Product Service
 builder.Services.AddGrpcClient<ProductGrpc.ProductGrpcClient>(options =>
 {
-    options.Address = new Uri("https+http://productservice");
-})
-.AddServiceDiscovery();
+    var productServiceUrl = builder.Configuration["SERVICES__PRODUCTSERVICE__HTTP__0"]
+        ?? "http://product-service:8080";
+    options.Address = new Uri(productServiceUrl);
+});
 
 // Add MediatR for CQRS
 builder.Services.AddMediatR(cfg =>
