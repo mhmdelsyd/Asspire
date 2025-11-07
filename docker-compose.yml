@@ -113,8 +113,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__writedb: Host=postgres-write;Port=5432;Database=writedb;Username=postgres;Password=postgres
-      ConnectionStrings__readdb: Host=postgres-read;Port=5432;Database=readdb;Username=postgres;Password=postgres
+      ConnectionStrings__writedb: Host=postgres-write;Port=5432;Database=orderwritedb;Username=postgres;Password=postgres
+      ConnectionStrings__readdb: Host=postgres-read;Port=5432;Database=orderreaddb;Username=postgres;Password=postgres
       ConnectionStrings__redis: redis:6379
       ConnectionStrings__rabbitmq: amqp://guest:guest@rabbitmq:5672
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317

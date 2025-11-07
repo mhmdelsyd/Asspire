@@ -61,13 +61,32 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Ensure databases are created
+// Ensure database tables are created
 using (var scope = app.Services.CreateScope())
 {
-    var writeContext = scope.ServiceProvider.GetRequiredService<OrderWriteDbContext>();
-    var readContext = scope.ServiceProvider.GetRequiredService<OrderReadDbContext>();
-    await writeContext.Database.EnsureCreatedAsync();
-    await readContext.Database.EnsureCreatedAsync();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        logger.LogInformation("Starting database initialization for Order Service...");
+
+        var writeContext = scope.ServiceProvider.GetRequiredService<OrderWriteDbContext>();
+        var readContext = scope.ServiceProvider.GetRequiredService<OrderReadDbContext>();
+
+        logger.LogInformation("Ensuring write database tables are created...");
+        await writeContext.Database.EnsureCreatedAsync();
+        logger.LogInformation("Write database tables created successfully.");
+
+        logger.LogInformation("Ensuring read database tables are created...");
+        await readContext.Database.EnsureCreatedAsync();
+        logger.LogInformation("Read database tables created successfully.");
+
+        logger.LogInformation("Database initialization completed successfully.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while initializing the database.");
+        throw;
+    }
 }
 
 // Configure the HTTP request pipeline
