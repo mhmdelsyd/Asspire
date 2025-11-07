@@ -1,5 +1,6 @@
 using Asspire.ProductService.Data;
 using Asspire.ProductService.Features.Products.Commands;
+using Asspire.ProductService.Features.Products.Queries;
 using Asspire.ProductService.IntegrationEvents;
 using Asspire.ProductService.Services;
 using MassTransit;
