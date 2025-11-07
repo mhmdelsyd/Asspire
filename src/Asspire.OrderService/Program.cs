@@ -19,7 +19,10 @@ builder.AddNpgsqlDbContext<OrderWriteDbContext>("writedb");
 builder.AddNpgsqlDbContext<OrderReadDbContext>("readdb");
 
 // Add Redis caching
-builder.AddRedisDistributedCache("redis");
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("redis");
+});
 
 // Add gRPC client for Product Service
 builder.Services.AddGrpcClient<ProductGrpc.ProductGrpcClient>(options =>

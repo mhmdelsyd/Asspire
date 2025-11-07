@@ -19,7 +19,10 @@ builder.AddNpgsqlDbContext<ProductWriteDbContext>("writedb");
 builder.AddNpgsqlDbContext<ProductReadDbContext>("readdb");
 
 // Add Redis caching
-builder.AddRedisDistributedCache("redis");
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("redis");
+});
 
 // Add MediatR for CQRS
 builder.Services.AddMediatR(cfg =>
